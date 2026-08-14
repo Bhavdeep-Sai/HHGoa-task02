@@ -3,7 +3,6 @@
 import React from "react";
 import { Mic, MicOff, Send, Loader2, Sparkles, Volume2 } from "lucide-react";
 
-// States passed in from page.tsx after mapping StreamingState → UI state
 export type RecordingState =
   | "idle"
   | "requesting_permission"
@@ -51,13 +50,13 @@ export function VoiceRecorder({
   const isTranscribing = state === "transcribing" || state === "stopping";
 
   return (
-    <div className="bg-surface/90 border border-gray-800 rounded-2xl p-6 shadow-xl backdrop-blur-md text-center max-w-2xl mx-auto my-6 space-y-4">
+    <div className="bg-surface/70 border border-border rounded-3xl p-8 shadow-xl shadow-slate-100/20 dark:shadow-black/30 text-center max-w-2xl mx-auto my-6 space-y-6 transition-all duration-300">
       {/* State Animated Status Badge */}
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold border bg-gray-900 border-gray-700 text-gray-300">
+      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold border bg-bgDarker/60 border-border text-textSecondary shadow-sm transition-all duration-200">
         {isListening ? (
           <>
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-            <span className="text-red-400">Listening... Speak now</span>
+            <span className="text-red-500 font-semibold">Listening... Speak now</span>
           </>
         ) : isTranscribing ? (
           <>
@@ -79,59 +78,65 @@ export function VoiceRecorder({
 
       {/* Display Spoken Voice Transcript immediately if available */}
       {inputMode === "voice" && voiceTranscript && (
-        <div className="bg-accent/10 border border-accent/30 text-accent px-4 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 animate-in fade-in">
-          <Volume2 className="w-4 h-4" />
+        <div className="bg-accent/10 border border-accent/25 text-accent px-4 py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+          <Volume2 className="w-4 h-4 shrink-0" />
           <span>Transcribed Question: &ldquo;{voiceTranscript}&rdquo;</span>
         </div>
       )}
 
       {/* Large Microphone Button */}
-      <div className="relative flex justify-center items-center my-4">
-        {isListening && (
+      <div className="relative flex justify-center items-center my-6">
+        {/* Pulsing Audio Ripples */}
+        {isListening ? (
           <div
-            className="absolute rounded-full bg-accent/30 transition-all duration-75"
+            className="absolute rounded-full bg-red-500/20 dark:bg-red-500/10 border border-red-500/30 animate-pulse transition-all duration-75"
             style={{
-              width: `${120 + volume * 1.2}px`,
-              height: `${120 + volume * 1.2}px`,
+              width: `${110 + volume * 1.4}px`,
+              height: `${110 + volume * 1.4}px`,
             }}
           />
+        ) : (
+          /* Silent breathing glow ring */
+          <div className="absolute w-[110px] h-[110px] rounded-full border border-accent/20 bg-accent/5 animate-pulse -z-0" />
         )}
         <button
           onClick={isListening ? onStopRecording : onStartRecording}
           disabled={isLoading || isTranscribing}
-          className={`relative z-10 w-24 h-24 rounded-full flex items-center justify-center transition-all duration-200 shadow-2xl ${
+          className={`relative z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl ${
             isListening
-              ? "bg-red-600 hover:bg-red-700 text-white ring-4 ring-red-500/50 scale-105"
-              : "bg-gradient-to-br from-accent to-orange-600 hover:scale-105 text-white shadow-accentGlow disabled:opacity-50"
+              ? "bg-red-500 hover:bg-red-600 text-white ring-4 ring-red-500/20 scale-105"
+              : "bg-gradient-to-br from-orange-500 to-orange-600 hover:scale-105 text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/35 disabled:opacity-50 cursor-pointer"
           }`}
         >
-          {isListening ? <MicOff className="w-10 h-10" /> : <Mic className="w-10 h-10" />}
+          {isListening ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
         </button>
       </div>
 
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-textTertiary font-medium tracking-wide transition-all">
         {isListening ? "Click microphone again to stop & process audio" : "Click microphone to speak or type question below"}
       </p>
 
-      {/* Text Form */}
-      <form onSubmit={handleSubmit} className="flex gap-2 max-w-lg mx-auto pt-2">
-        <input
-          type="text"
-          value={textQuery}
-          onChange={(e) => setTextQuery(e.target.value)}
-          placeholder="Or type question in Hindi, Telugu, Tamil, English, Code-Mixed..."
-          disabled={isLoading || isListening || isTranscribing}
-          className="flex-1 bg-surfaceHover border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-accent disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={isLoading || !textQuery.trim() || isListening || isTranscribing}
-          className="bg-accent hover:bg-orange-600 text-white font-medium px-4 py-2.5 rounded-xl text-sm flex items-center gap-1.5 disabled:opacity-50 transition-all"
-        >
-          <Send className="w-4 h-4" />
-        </button>
+      {/* Integrated Capsule Text Form */}
+      <form onSubmit={handleSubmit} className="max-w-lg mx-auto pt-2">
+        <div className="relative flex items-center bg-bgDarker/60 border border-border rounded-full p-1.5 focus-within:ring-4 focus-within:ring-accent/15 focus-within:border-accent shadow-inner hover:border-border/80 transition-all duration-300">
+          <input
+            type="text"
+            value={textQuery}
+            onChange={(e) => setTextQuery(e.target.value)}
+            placeholder="Or type question in Hindi, Telugu, Tamil, English..."
+            disabled={isLoading || isListening || isTranscribing}
+            className="flex-1 bg-transparent px-4 py-2 text-sm text-textPrimary placeholder-textTertiary/60 focus:outline-none disabled:opacity-50"
+          />
+          <button
+            type="submit"
+            disabled={isLoading || !textQuery.trim() || isListening || isTranscribing}
+            className="bg-orange-500 hover:bg-orange-600 disabled:bg-textTertiary/20 text-white font-medium w-9 h-9 rounded-full flex items-center justify-center disabled:opacity-40 transition-all duration-200 shadow-md cursor-pointer"
+            title="Send query"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
       </form>
     </div>
   );
 }
-
