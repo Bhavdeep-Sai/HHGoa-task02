@@ -26,12 +26,20 @@ class BM25Retriever:
         
         # Check if disk persistence file exists
         bm25_file = getattr(settings, "BM25_STORAGE_PATH", "./data/bm25_index.pkl")
+        if not os.path.exists(bm25_file):
+            for d in ["./data", "../data", "data", getattr(settings, "DATA_DIRECTORY", "./data")]:
+                cand = os.path.join(d, "bm25_index.pkl")
+                if os.path.exists(cand):
+                    bm25_file = cand
+                    break
+
         if os.path.exists(bm25_file):
             try:
                 self.load_from_disk(bm25_file)
                 return
             except Exception as e:
                 print(f"Warning loading BM25 index: {e}")
+
 
     COMMON_STOPWORDS = {
         "kya", "hua", "hone", "ke", "ka", "ki", "baad", "mein", "ko", "tha", "thi", "hai", "ho",

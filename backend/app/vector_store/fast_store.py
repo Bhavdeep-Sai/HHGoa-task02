@@ -3,6 +3,9 @@ import pickle
 import numpy as np
 from typing import List, Dict, Any, Optional
 
+from backend.app.config import settings
+from backend.app.utils.logger import logger
+
 PASSAGES_COLLECTION = "indic_passages"
 QA_COLLECTION = "indic_qa"
 
@@ -13,8 +16,8 @@ class FastVectorStore:
     Delivers exact Cosine Similarity search over 100,000+ vectors in < 5ms
     with zero file locks, zero external daemon dependencies, and instant memory persistence.
     """
-    def __init__(self, storage_dir: str = "./data"):
-        self.storage_dir = storage_dir
+    def __init__(self, storage_dir: Optional[str] = None):
+        self.storage_dir = storage_dir or getattr(settings, "DATA_DIRECTORY", "./data")
         os.makedirs(self.storage_dir, exist_ok=True)
         
         # Collection matrices and metadata stores
@@ -24,25 +27,44 @@ class FastVectorStore:
             QA_COLLECTION: {"vectors": None, "ids": [], "payloads": []}
         }
         
-        self.npz_path = os.path.join(self.storage_dir, "vector_matrices.npz")
-        self.meta_path = os.path.join(self.storage_dir, "vector_metadata.pkl")
+        self.npz_path = getattr(settings, "NPZ_STORAGE_PATH", os.path.join(self.storage_dir, "vector_matrices.npz"))
+        self.meta_path = getattr(settings, "METADATA_STORAGE_PATH", os.path.join(self.storage_dir, "vector_metadata.pkl"))
         self.load_from_disk()
 
     def load_from_disk(self):
         """Loads matrices and metadata from disk if available."""
-        if os.path.exists(self.npz_path) and os.path.exists(self.meta_path):
+        # Check primary resolved paths, then fallback search
+        npz_file = self.npz_path
+        meta_file = self.meta_path
+
+        if not (os.path.exists(npz_file) and os.path.exists(meta_file)):
+            for d in [self.storage_dir, "./data", "../data", "data"]:
+                cand_npz = os.path.join(d, "vector_matrices.npz")
+                cand_meta = os.path.join(d, "vector_metadata.pkl")
+                if os.path.exists(cand_npz) and os.path.exists(cand_meta):
+                    npz_file = cand_npz
+                    meta_file = cand_meta
+                    break
+
+        if os.path.exists(npz_file) and os.path.exists(meta_file):
             try:
-                npz_data = np.load(self.npz_path)
-                with open(self.meta_path, "rb") as f:
+                npz_data = np.load(npz_file)
+                with open(meta_file, "rb") as f:
                     meta_data = pickle.load(f)
                     
+                total_loaded = 0
                 for coll in [PASSAGES_COLLECTION, QA_COLLECTION]:
                     if coll in npz_data:
                         self.collections[coll]["vectors"] = npz_data[coll].astype(np.float32)
                         self.collections[coll]["ids"] = meta_data.get(coll, {}).get("ids", [])
                         self.collections[coll]["payloads"] = meta_data.get(coll, {}).get("payloads", [])
+                        total_loaded += len(self.collections[coll]["ids"])
+                logger.info(f"Loaded {total_loaded} vectors from disk ({npz_file}) into FastVectorStore.")
             except Exception as e:
-                print(f"Warning loading fast vector store from disk: {e}")
+                logger.warning(f"Warning loading fast vector store from disk: {e}")
+        else:
+            logger.warning(f"FastVectorStore data files not found at '{npz_file}' or '{meta_file}'.")
+
 
     def save_to_disk(self):
         """Persists matrices and metadata to disk."""

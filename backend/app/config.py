@@ -1,7 +1,30 @@
 import os
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+from pathlib import Path
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+_THIS_DIR = Path(__file__).resolve().parent          # backend/app
+_BACKEND_DIR = _THIS_DIR.parent                     # backend
+_PROJECT_ROOT = _BACKEND_DIR.parent                 # repo root
+
+
+def _resolve_data_dir() -> Path:
+    candidates = [
+        Path(os.environ.get("DATA_DIR", "")),
+        _PROJECT_ROOT / "data",
+        _BACKEND_DIR / "data",
+        Path.cwd() / "data",
+        Path.cwd().parent / "data"
+    ]
+    for c in candidates:
+        if c and c.exists() and (c / "vector_matrices.npz").exists():
+            return c.resolve()
+    return (_PROJECT_ROOT / "data").resolve()
+
+
+RESOLVED_DATA_DIR = _resolve_data_dir()
 
 
 class Settings(BaseSettings):
@@ -19,7 +42,7 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gpt-3.5-turbo"
 
     # CORS
-    CORS_ORIGINS: Optional[str] = None  # comma-separated list; None = localhost dev defaults
+    CORS_ORIGINS: Optional[str] = None  # comma-separated list; None = default origins
 
     # Model Configs
     EMBEDDING_MODEL: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
@@ -47,9 +70,13 @@ class Settings(BaseSettings):
     MSMARCO_BATCH_SIZE: int = 64
     MSMARCO_STREAMING: bool = True
 
-    # Persistent Storage Paths
-    QDRANT_STORAGE_PATH: str = "./data/qdrant_db"
-    BM25_STORAGE_PATH: str = "./data/bm25_index.pkl"
+    # Persistent Storage Paths (resolved dynamically from project root or backend dir)
+    DATA_DIRECTORY: str = str(RESOLVED_DATA_DIR)
+    QDRANT_STORAGE_PATH: str = str(RESOLVED_DATA_DIR / "qdrant_db")
+    BM25_STORAGE_PATH: str = str(RESOLVED_DATA_DIR / "bm25_index.pkl")
+    NPZ_STORAGE_PATH: str = str(RESOLVED_DATA_DIR / "vector_matrices.npz")
+    METADATA_STORAGE_PATH: str = str(RESOLVED_DATA_DIR / "vector_metadata.pkl")
+    CHECKPOINT_STORAGE_PATH: str = str(RESOLVED_DATA_DIR / "checkpoints" / "msmarco_checkpoint.json")
 
     # RRF Weights
     DENSE_WEIGHT: float = 0.5
@@ -64,3 +91,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+

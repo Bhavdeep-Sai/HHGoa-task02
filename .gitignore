@@ -18,6 +18,9 @@ data/qdrant_db/
 *.db
 *.sqlite
 *.pkl
+!data/bm25_index.pkl
+!data/vector_metadata.pkl
+
 
 # Scratch & Temp
 scratch/
