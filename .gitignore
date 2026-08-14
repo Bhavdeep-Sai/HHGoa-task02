@@ -15,11 +15,13 @@ frontend/out/
 # Database & Indexes
 qdrant_storage/
 data/qdrant_db/
+backend/data/qdrant_db/
 *.db
 *.sqlite
 *.pkl
-!data/bm25_index.pkl
-!data/vector_metadata.pkl
+!**/bm25_index.pkl
+!**/vector_metadata.pkl
+
 
 
 # Scratch & Temp
