@@ -1,5 +1,11 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
   title: "IndicVoiceRAG — Adaptive Multilingual Voice RAG",
@@ -12,10 +18,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="antialiased selection:bg-accent selection:text-white bg-background text-gray-100">
+    <html lang="en">
+      <body className={`${plusJakartaSans.className} antialiased selection:bg-accent selection:text-white bg-background text-textPrimary`}>
         {children}
       </body>
     </html>
   );
 }
+
+
