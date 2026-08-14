@@ -1,0 +1,29 @@
+{
+  "dataset": "ai4bharat/MSMARCO-XI",
+  "version": "1.0.0",
+  "build_timestamp": "2026-08-14T07:43:24.462081",
+  "splits": [
+    "train",
+    "validation"
+  ],
+  "languages": [
+    "en",
+    "hi",
+    "te"
+  ],
+  "record_count": 1001,
+  "passage_vector_count": 6038,
+  "qa_vector_count": 1001,
+  "total_vector_count": 7039,
+  "bm25_corpus_count": 7039,
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "vector_dim": 384,
+  "sentinel_query_id": 1185869,
+  "sentinel_verified": true,
+  "chunking_strategies": [
+    "Parent-Child (150/600)",
+    "Semantic (300)"
+  ],
+  "vector_engine": "FastVectorStore (BLAS Matrix Dot-Product)",
+  "lexical_engine": "BM25 Inverted Posting Lists"
+}

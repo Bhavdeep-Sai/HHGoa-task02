@@ -1,0 +1,101 @@
+query_id,query,language,preprocessing_ms,embedding_ms,qdrant_connect_ms,dense_search_ms,bm25_ms,rrf_ms,reranker_ms,retrieval_latency_ms,generation_latency_ms,grounding_ms,total_latency_ms,fast_path_used,reranker_used
+1,Manhattan project successful hone ke baad kya hua?,hi,0.13,24.27,0.0,2.09,0.07,0.02,2719.71,2746.16,1.2,0.21,2746.62,True,True
+2,ఈ project యొక్క immediate impact ఏమిటి?,te,0.16,30.07,0.0,1.82,0.05,0.01,736.48,768.43,1.2,0.06,768.71,True,True
+3,வாஷிங்டன் நகரம் எப்போது நிறுவப்பட்டது?,ta,0.09,30.46,0.0,1.49,0.02,0.01,1373.29,1405.85,677.32,0.01,2083.35,False,True
+4,भारत का संविधान कब लागू हुआ था?,hi,0.09,23.97,0.0,1.36,0.07,0.01,1328.87,1354.29,1.2,0.04,1354.5,True,True
+5,What were the primary consequences of the Manhattan Project?,en,0.13,20.4,0.0,1.51,0.05,0.02,1392.57,1414.56,1.2,0.06,1414.82,True,True
+6,Manhattan project nuclear research details in 1945,en,0.1,20.72,0.0,1.93,0.05,0.03,1168.9,1191.64,692.01,0.01,1883.84,False,True
+7,भारत के गणतंत्र दिवस का महत्व क्या है?,hi,0.09,19.76,0.0,1.57,0.06,0.03,1363.23,1384.65,665.48,0.03,2050.32,False,True
+8,George Washington and District of Columbia founding,en,0.09,26.36,0.0,2.16,0.06,0.03,1246.63,1275.24,772.14,0.01,2047.55,False,True
+9,Project immediate consequences on atomic age and science,en,0.12,24.72,0.0,1.66,0.04,0.02,1225.57,1252.03,732.27,0.1,1984.62,False,True
+10,Doctor Ambedkar and Constitution assembly details,en,0.17,23.73,0.0,1.83,0.04,0.02,1438.19,1463.81,725.27,0.04,2189.37,False,True
+11,Manhattan project successful hone ke baad kya hua?,hi,0.11,0.0,0.0,1.89,0.03,0.01,1908.64,1910.58,1.2,0.1,1910.84,True,True
+12,ఈ project యొక్క immediate impact ఏమిటి?,te,0.11,0.0,0.0,1.77,0.03,0.01,679.56,681.37,1.2,0.1,681.65,True,True
+13,வாஷிங்டன் நகரம் எப்போது நிறுவப்பட்டது?,ta,0.17,0.0,0.0,2.56,0.03,0.03,1456.21,1461.21,734.34,0.02,2195.87,False,True
+14,भारत का संविधान कब लागू हुआ था?,hi,0.07,0.0,0.0,1.88,0.04,0.01,1477.73,1479.67,1.2,0.05,1479.86,True,True
+15,What were the primary consequences of the Manhattan Project?,en,0.15,0.0,0.0,1.62,0.05,0.02,1590.07,1591.76,1.2,0.07,1592.04,True,True
+16,Manhattan project nuclear research details in 1945,en,0.11,0.0,0.0,1.73,0.06,0.03,1324.45,1326.28,828.75,0.02,2155.25,False,True
+17,भारत के गणतंत्र दिवस का महत्व क्या है?,hi,0.08,0.0,0.0,2.21,0.06,0.02,1479.33,1481.62,791.72,0.05,2273.55,False,True
+18,George Washington and District of Columbia founding,en,0.1,0.0,0.0,1.81,0.06,0.05,1266.94,1268.86,828.09,0.02,2097.16,False,True
+19,Project immediate consequences on atomic age and science,en,0.12,0.0,0.0,1.53,0.03,0.02,1331.8,1333.38,640.68,0.1,1974.38,False,True
+20,Doctor Ambedkar and Constitution assembly details,en,0.18,0.0,0.0,2.79,0.09,0.2,1511.55,1514.65,754.45,0.07,2269.45,False,True
+21,Manhattan project successful hone ke baad kya hua?,hi,0.21,0.0,0.0,3.24,0.03,0.01,1979.95,1983.25,1.2,0.1,1983.65,True,True
+22,ఈ project యొక్క immediate impact ఏమిటి?,te,0.12,0.0,0.0,1.85,0.04,0.01,681.17,683.07,1.2,0.13,683.4,True,True
+23,வாஷிங்டன் நகரம் எப்போது நிறுவப்பட்டது?,ta,0.1,0.0,0.0,1.91,0.02,0.02,1441.72,1444.29,952.02,0.02,2396.56,False,True
+24,भारत का संविधान कब लागू हुआ था?,hi,0.08,0.0,0.0,3.21,0.06,0.02,1569.43,1572.72,1.2,0.07,1572.96,True,True
+25,What were the primary consequences of the Manhattan Project?,en,0.22,0.0,0.0,2.32,0.06,0.03,1405.91,1408.34,1.2,0.06,1408.69,True,True
+26,Manhattan project nuclear research details in 1945,en,0.13,0.0,0.0,1.89,0.04,0.02,1255.57,1257.54,781.96,0.04,2039.76,False,True
+27,भारत के गणतंत्र दिवस का महत्व क्या है?,hi,0.11,0.0,0.0,1.46,0.04,0.01,1596.9,1598.41,843.4,0.05,2442.06,False,True
+28,George Washington and District of Columbia founding,en,0.12,0.0,0.0,2.28,0.1,0.03,1427.54,1429.96,838.34,0.01,2268.53,False,True
+29,Project immediate consequences on atomic age and science,en,0.09,0.0,0.0,2.38,0.07,0.04,1343.54,1346.03,869.87,0.07,2216.15,False,True
+30,Doctor Ambedkar and Constitution assembly details,en,0.13,0.0,0.0,2.34,0.03,0.03,1307.34,1309.76,642.17,0.04,1952.18,False,True
+31,Manhattan project successful hone ke baad kya hua?,hi,0.07,0.0,0.0,1.14,0.02,0.01,1864.12,1865.3,1.2,0.08,1865.52,True,True
+32,ఈ project యొక్క immediate impact ఏమిటి?,te,0.11,0.0,0.0,2.07,0.04,0.01,658.05,660.18,1.2,0.1,660.46,True,True
+33,வாஷிங்டன் நகரம் எப்போது நிறுவப்பட்டது?,ta,0.11,0.0,0.0,2.35,0.06,0.03,1550.41,1554.26,800.29,0.02,2354.82,False,True
+34,भारत का संविधान कब लागू हुआ था?,hi,0.08,0.0,0.0,1.98,0.1,0.02,1484.59,1486.7,1.2,0.05,1486.91,True,True
+35,What were the primary consequences of the Manhattan Project?,en,0.16,0.0,0.0,2.51,0.08,0.04,1351.38,1354.0,1.2,0.06,1354.3,True,True
+36,Manhattan project nuclear research details in 1945,en,0.1,0.0,0.0,1.54,0.04,0.02,1315.77,1317.38,727.41,0.02,2045.04,False,True
+37,भारत के गणतंत्र दिवस का महत्व क्या है?,hi,0.08,0.0,0.0,1.71,0.04,0.01,1417.82,1419.59,1109.2,0.04,2528.97,False,True
+38,George Washington and District of Columbia founding,en,0.08,0.0,0.0,1.16,0.04,0.04,1372.25,1373.49,771.51,0.01,2145.17,False,True
+39,Project immediate consequences on atomic age and science,en,0.14,0.0,0.0,2.39,0.06,0.04,1412.59,1415.09,732.37,0.04,2147.74,False,True
+40,Doctor Ambedkar and Constitution assembly details,en,0.11,0.0,0.0,2.0,0.03,0.05,1332.71,1334.79,670.7,0.07,2005.76,False,True
+41,Manhattan project successful hone ke baad kya hua?,hi,0.16,0.0,0.0,2.9,0.04,0.01,1775.61,1778.57,1.2,0.08,1778.87,True,True
+42,ఈ project యొక్క immediate impact ఏమిటి?,te,0.09,0.0,0.0,1.43,0.04,0.01,628.77,630.25,1.2,0.08,630.48,True,True
+43,வாஷிங்டன் நகரம் எப்போது நிறுவப்பட்டது?,ta,0.08,0.0,0.0,1.97,0.02,0.02,1293.5,1296.18,623.04,0.01,1919.37,False,True
+44,भारत का संविधान कब लागू हुआ था?,hi,0.05,0.0,0.0,1.71,0.05,0.01,1434.43,1436.2,1.2,0.05,1436.36,True,True
+45,What were the primary consequences of the Manhattan Project?,en,0.16,0.0,0.0,2.27,0.07,0.03,1715.3,1717.69,1.2,0.07,1717.99,True,True
+46,Manhattan project nuclear research details in 1945,en,0.12,0.0,0.0,1.97,0.05,0.03,1183.73,1185.79,632.38,0.01,1818.4,False,True
+47,भारत के गणतंत्र दिवस का महत्व क्या है?,hi,0.06,0.0,0.0,1.24,0.04,0.01,1396.44,1397.73,680.77,0.05,2078.69,False,True
+48,George Washington and District of Columbia founding,en,0.12,0.0,0.0,1.76,0.05,0.02,1275.32,1277.15,661.06,0.02,1938.44,False,True
+49,Project immediate consequences on atomic age and science,en,0.13,0.0,0.0,1.81,0.05,0.03,1441.45,1443.34,699.03,0.06,2142.66,False,True
+50,Doctor Ambedkar and Constitution assembly details,en,0.11,0.0,0.0,1.63,0.04,0.03,1394.39,1396.1,623.57,0.06,2019.94,False,True
+51,Manhattan project successful hone ke baad kya hua?,hi,0.11,0.0,0.0,1.94,0.04,0.02,1976.6,1978.6,1.2,0.1,1978.89,True,True
+52,ఈ project యొక్క immediate impact ఏమిటి?,te,0.13,0.0,0.0,2.29,0.05,0.01,837.78,840.13,1.2,0.07,840.39,True,True
+53,வாஷிங்டன் நகரம் எப்போது நிறுவப்பட்டது?,ta,0.08,0.0,0.0,1.73,0.02,0.03,1892.59,1895.56,989.11,0.01,2884.87,False,True
+54,भारत का संविधान कब लागू हुआ था?,hi,0.06,0.0,0.0,1.86,0.05,0.01,1939.77,1941.7,1.2,0.05,1941.89,True,True
+55,What were the primary consequences of the Manhattan Project?,en,0.15,0.0,0.0,2.63,0.06,0.03,1895.83,1898.56,1.2,0.07,1898.86,True,True
+56,Manhattan project nuclear research details in 1945,en,0.14,0.0,0.0,5.58,0.06,0.04,1739.83,1745.51,874.36,0.02,2620.14,False,True
+57,भारत के गणतंत्र दिवस का महत्व क्या है?,hi,0.1,0.01,0.0,2.4,0.06,0.02,2150.91,2153.4,1552.23,0.03,3705.85,False,True
+58,George Washington and District of Columbia founding,en,0.07,0.0,0.0,1.29,0.03,0.02,1306.13,1307.47,658.89,0.04,1966.62,False,True
+59,Project immediate consequences on atomic age and science,en,0.09,0.0,0.0,1.64,0.04,0.03,1264.05,1265.76,1336.99,0.05,2602.96,False,True
+60,Doctor Ambedkar and Constitution assembly details,en,0.08,0.0,0.0,1.37,0.02,0.02,1247.51,1248.93,890.05,0.07,2139.2,False,True
+61,Manhattan project successful hone ke baad kya hua?,hi,0.1,0.0,0.0,1.59,0.02,0.01,1696.08,1697.71,1.2,0.05,1697.92,True,True
+62,ఈ project యొక్క immediate impact ఏమిటి?,te,0.08,0.0,0.0,1.69,0.04,0.01,589.79,591.54,1.2,0.06,591.73,True,True
+63,வாஷிங்டன் நகரம் எப்போது நிறுவப்பட்டது?,ta,0.07,0.0,0.0,1.49,0.04,0.02,1252.27,1254.43,1379.46,0.01,2634.05,False,True
+64,भारत का संविधान कब लागू हुआ था?,hi,0.05,0.0,0.0,1.48,0.03,0.01,1396.46,1397.99,1.2,0.04,1398.13,True,True
+65,What were the primary consequences of the Manhattan Project?,en,0.16,0.0,0.0,1.95,0.06,0.03,1249.69,1251.74,1.2,0.06,1252.02,True,True
+66,Manhattan project nuclear research details in 1945,en,0.1,0.0,0.0,1.65,0.04,0.02,1116.75,1118.46,773.74,0.01,1892.4,False,True
+67,भारत के गणतंत्र दिवस का महत्व क्या है?,hi,0.05,0.0,0.0,1.48,0.04,0.01,1285.67,1287.21,1179.41,0.04,2466.78,False,True
+68,George Washington and District of Columbia founding,en,0.09,0.0,0.0,1.42,0.03,0.02,1110.85,1112.32,852.79,0.01,1965.28,False,True
+69,Project immediate consequences on atomic age and science,en,0.08,0.0,0.0,1.34,0.03,0.02,1116.03,1117.43,691.76,0.06,1809.4,False,True
+70,Doctor Ambedkar and Constitution assembly details,en,0.12,0.0,0.0,2.16,0.03,0.02,1128.39,1130.61,687.81,0.05,1818.69,False,True
+71,Manhattan project successful hone ke baad kya hua?,hi,0.09,0.0,0.0,1.59,0.02,0.03,1562.82,1564.47,1.2,0.06,1564.67,True,True
+72,ఈ project యొక్క immediate impact ఏమిటి?,te,0.07,0.0,0.0,1.35,0.03,0.01,563.75,565.14,1.2,0.09,565.4,True,True
+73,வாஷிங்டன் நகரம் எப்போது நிறுவப்பட்டது?,ta,0.07,0.0,0.0,1.32,0.02,0.01,1124.44,1126.39,736.41,0.01,1862.94,False,True
+74,भारत का संविधान कब लागू हुआ था?,hi,0.06,0.0,0.0,1.45,0.03,0.01,1161.5,1162.99,1.2,0.04,1163.14,True,True
+75,What were the primary consequences of the Manhattan Project?,en,0.09,0.0,0.0,1.21,0.04,0.02,1084.81,1086.1,1.2,0.05,1086.3,True,True
+76,Manhattan project nuclear research details in 1945,en,0.08,0.0,0.0,1.22,0.05,0.02,1084.65,1085.94,1258.76,0.01,2344.86,False,True
+77,भारत के गणतंत्र दिवस का महत्व क्या है?,hi,0.05,0.0,0.0,2.0,0.04,0.01,1331.25,1333.3,771.47,0.05,2104.95,False,True
+78,George Washington and District of Columbia founding,en,0.12,0.0,0.0,1.96,0.07,0.03,1178.0,1180.06,2178.85,0.02,3359.13,False,True
+79,Project immediate consequences on atomic age and science,en,0.11,0.0,0.0,1.72,0.04,0.02,1183.24,1185.02,1919.55,0.06,3104.84,False,True
+80,Doctor Ambedkar and Constitution assembly details,en,0.11,0.0,0.0,1.91,0.03,0.03,1228.44,1230.41,1241.09,0.04,2471.73,False,True
+81,Manhattan project successful hone ke baad kya hua?,hi,0.13,0.0,0.0,1.66,0.03,0.01,1575.25,1576.95,1.2,0.06,1577.18,True,True
+82,ఈ project యొక్క immediate impact ఏమిటి?,te,0.07,0.0,0.0,1.35,0.03,0.01,551.63,553.03,1.2,0.06,553.21,True,True
+83,வாஷிங்டன் நகரம் எப்போது நிறுவப்பட்டது?,ta,0.07,0.0,0.0,1.4,0.02,0.01,1204.14,1206.14,632.06,0.01,1838.36,False,True
+84,भारत का संविधान कब लागू हुआ था?,hi,0.05,0.0,0.0,2.02,0.03,0.01,1288.72,1290.79,1.2,0.04,1290.93,True,True
+85,What were the primary consequences of the Manhattan Project?,en,0.14,0.0,0.0,1.75,0.04,0.02,1308.57,1310.39,1.2,0.05,1310.65,True,True
+86,Manhattan project nuclear research details in 1945,en,0.09,0.0,0.0,1.5,0.04,0.02,1126.15,1127.71,619.19,0.02,1747.1,False,True
+87,भारत के गणतंत्र दिवस का महत्व क्या है?,hi,0.1,0.02,0.0,1.47,0.04,0.01,1352.8,1354.35,641.63,0.03,1996.18,False,True
+88,George Washington and District of Columbia founding,en,0.08,0.0,0.0,1.26,0.03,0.02,1316.64,1317.95,613.93,0.01,1932.05,False,True
+89,Project immediate consequences on atomic age and science,en,0.08,0.0,0.0,1.34,0.04,0.03,1246.88,1248.29,671.42,0.06,1919.94,False,True
+90,Doctor Ambedkar and Constitution assembly details,en,0.07,0.0,0.0,1.33,0.02,0.02,1233.96,1235.33,699.63,0.06,1935.17,False,True
+91,Manhattan project successful hone ke baad kya hua?,hi,0.12,0.0,0.0,2.05,0.04,0.01,1749.11,1751.23,1.2,0.08,1751.47,True,True
+92,ఈ project యొక్క immediate impact ఏమిటి?,te,0.15,0.0,0.0,2.21,0.05,0.01,603.01,605.28,1.2,0.06,605.55,True,True
+93,வாஷிங்டன் நகரம் எப்போது நிறுவப்பட்டது?,ta,0.07,0.0,0.0,1.68,0.02,0.02,1274.93,1277.4,749.81,0.01,2027.37,False,True
+94,भारत का संविधान कब लागू हुआ था?,hi,0.11,0.0,0.0,1.36,0.03,0.01,1303.69,1305.1,1.2,0.04,1305.31,True,True
+95,What were the primary consequences of the Manhattan Project?,en,0.11,0.0,0.0,1.47,0.05,0.02,1256.45,1257.99,1.2,0.06,1258.21,True,True
+96,Manhattan project nuclear research details in 1945,en,0.12,0.0,0.0,1.68,0.04,0.02,1193.7,1195.45,594.75,0.01,1790.43,False,True
+97,भारत के गणतंत्र दिवस का महत्व क्या है?,hi,0.07,0.0,0.0,1.66,0.05,0.01,1389.7,1391.42,699.55,0.05,2091.19,False,True
+98,George Washington and District of Columbia founding,en,0.12,0.0,0.0,2.09,0.05,0.03,1251.71,1253.89,638.41,0.01,1892.52,False,True
+99,Project immediate consequences on atomic age and science,en,0.13,0.0,0.0,1.92,0.04,0.02,1260.77,1262.76,813.12,0.06,2076.15,False,True
+100,Doctor Ambedkar and Constitution assembly details,en,0.15,0.0,0.0,1.77,0.03,0.02,1304.73,1306.55,874.86,0.06,2181.76,False,True

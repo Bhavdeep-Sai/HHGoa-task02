@@ -1,0 +1,106 @@
+"use client";
+
+import React from "react";
+import { PipelineStageMetrics } from "../lib/api";
+import { Timer } from "lucide-react";
+
+interface LatencyMetricsProps {
+  stages: PipelineStageMetrics;
+  fastPathUsed: boolean;
+}
+
+export function LatencyMetrics({ stages, fastPathUsed }: LatencyMetricsProps) {
+  const isVoice = stages.stt_latency_ms > 0;
+  const ragLatency = stages.rag_latency_ms || (stages.query_norm_latency_ms + stages.retrieval_latency_ms + stages.generation_latency_ms + (stages.grounding_ms || 0));
+  const totalVoice = stages.voice_to_answer_latency_ms || (stages.stt_latency_ms + ragLatency);
+  const total = isVoice ? totalVoice : (stages.total_latency_ms || ragLatency || 1);
+
+  const getPct = (val: number) => Math.min(100, Math.max(2, Math.round((val / total) * 100)));
+
+  return (
+    <div className="bg-surface border border-gray-800 rounded-2xl p-5 shadow-lg space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h3 className="text-sm font-semibold text-gray-200 flex items-center gap-2">
+          <Timer className="w-4 h-4 text-accent" />
+          Pipeline Latency Breakdown
+        </h3>
+        <div className="flex gap-2 text-xs font-bold flex-wrap">
+          <div className={`px-3 py-1 rounded-lg border ${
+            ragLatency <= 200 
+              ? "text-emerald-400 bg-emerald-950/80 border-emerald-800" 
+              : "text-amber-400 bg-amber-950/80 border-amber-800"
+          }`}>
+            RAG Pipeline: {ragLatency.toFixed(2)} ms ({ragLatency <= 200 ? "Under target" : `Above target by ${(ragLatency - 200).toFixed(2)} ms`})
+          </div>
+          {isVoice && (
+            <div className={`px-3 py-1 rounded-lg border ${
+              totalVoice <= 500 
+                ? "text-emerald-400 bg-emerald-950/80 border-emerald-800" 
+                : "text-blue-400 bg-blue-950/80 border-blue-800"
+            }`}>
+              Voice-to-Answer: {totalVoice.toFixed(2)} ms ({totalVoice <= 500 ? "Under target" : `Above target by ${(totalVoice - 500).toFixed(2)} ms`})
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Latency Bar Stack */}
+      <div className="h-3 w-full bg-gray-900 rounded-full overflow-hidden flex gap-0.5">
+        {isVoice && (
+          <div
+            style={{ width: `${getPct(stages.stt_latency_ms)}%` }}
+            className="bg-blue-500 h-full"
+            title={`STT: ${stages.stt_latency_ms}ms`}
+          />
+        )}
+        <div
+          style={{ width: `${getPct(stages.query_norm_latency_ms)}%` }}
+          className="bg-indigo-500 h-full"
+          title={`Query Norm: ${stages.query_norm_latency_ms}ms`}
+        />
+        <div
+          style={{ width: `${getPct(stages.retrieval_latency_ms)}%` }}
+          className="bg-amber-500 h-full"
+          title={`Retrieval: ${stages.retrieval_latency_ms}ms`}
+        />
+        <div
+          style={{ width: `${getPct(stages.generation_latency_ms)}%` }}
+          className="bg-emerald-500 h-full"
+          title={`Generation: ${stages.generation_latency_ms}ms`}
+        />
+        {(stages.grounding_ms || 0) > 0 && (
+          <div
+            style={{ width: `${getPct(stages.grounding_ms || 0)}%` }}
+            className="bg-purple-500 h-full"
+            title={`Grounding: ${stages.grounding_ms}ms`}
+          />
+        )}
+      </div>
+
+      {/* Individual Stage Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div className="bg-surfaceHover/50 p-2.5 rounded-xl border border-gray-800">
+          <span className="text-gray-400 text-[11px] block">STT Latency</span>
+          <span className="text-sm font-semibold text-blue-400">
+            {isVoice ? `${stages.stt_latency_ms.toFixed(2)} ms` : "0 ms (Typed Query)"}
+          </span>
+        </div>
+        <div className="bg-surfaceHover/50 p-2.5 rounded-xl border border-gray-800">
+          <span className="text-gray-400 text-[11px] block">Retrieval Latency</span>
+          <span className="text-sm font-semibold text-amber-400">{stages.retrieval_latency_ms.toFixed(2)} ms</span>
+        </div>
+        <div className="bg-surfaceHover/50 p-2.5 rounded-xl border border-gray-800">
+          <span className="text-gray-400 text-[11px] block">Generation Latency</span>
+          <span className="text-sm font-semibold text-emerald-400">{stages.generation_latency_ms.toFixed(2)} ms</span>
+        </div>
+        <div className="bg-surfaceHover/50 p-2.5 rounded-xl border border-gray-800">
+          <span className="text-gray-400 text-[11px] block">
+            {isVoice ? "Total Voice-to-Answer" : "RAG Total Latency"}
+          </span>
+          <span className="text-sm font-semibold text-white">{total.toFixed(2)} ms</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+

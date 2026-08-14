@@ -1,0 +1,35 @@
+# Python & Environment
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv/
+venv/
+ENV/
+
+# Next.js & Node
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Database & Indexes
+qdrant_storage/
+data/qdrant_db/
+*.db
+*.sqlite
+*.pkl
+
+# Scratch & Temp
+scratch/
+
+# Logs
+*.log
+
+# Evaluation outputs
+evaluation/results/*.raw
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
