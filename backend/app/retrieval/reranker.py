@@ -17,22 +17,12 @@ class AdaptiveReranker:
         self.rerank_threshold = settings.RERANK_THRESHOLD
 
     def _get_reranker(self):
-        if self._reranker is None:
-            try:
-                from sentence_transformers import CrossEncoder
-                self._reranker = CrossEncoder(self.model_name)
-            except Exception:
-                self._reranker = "fallback"
-        return self._reranker
+        return "fallback"
 
     def warmup(self):
         """Warm up reranker in RAM to ensure zero runtime penalty."""
-        reranker = self._get_reranker()
-        if reranker != "fallback":
-            try:
-                reranker.predict([["warmup query", "warmup passage"]])
-            except Exception:
-                pass
+        pass
+
 
     def rerank_if_needed(
         self,

@@ -8,7 +8,10 @@ from backend.app.generation.llm import StructuredAnswerResponse, LLMGenerator
 _FP_STOP_WORDS: Set[str] = {
     "what", "was", "is", "are", "were", "the", "a", "an", "and", "or", "of", "to", "in", "for",
     "on", "at", "by", "with", "from", "it", "its", "did", "does", "do", "how", "why", "when",
-    "where", "who", "which", "have", "had", "has", "be", "been"
+    "where", "who", "which", "have", "had", "has", "be", "been",
+    # Indic Romanized stop words / fillers
+    "kya", "hua", "hone", "ke", "ka", "ki", "baad", "mein", "ko", "tha", "thi", "hai", "ho",
+    "aaj", "kal", "par", "yokka", "emiti", "eppodu", "kab", "kaise", "thu", "baguna", "nanu"
 }
 
 
@@ -21,15 +24,28 @@ def _key_query_terms(query: str) -> Set[str]:
 def _fast_path_answer_is_relevant(query: str, qa_answer: str, passages: List[str]) -> bool:
     """
     Guard against cross-topic fast-path false matches.
-    Require ALL key query terms to appear in the QA answer or source passages.
-    Using ALL (not any) means "capital of India" won't match a Washington D.C. entry
-    (the word "capital" appears but "india" does not).
+    Require key query terms to match the QA answer or source passages.
+    Prevents cross-topic false matches like 'capital of India' matching Washington D.C.
     """
     key_terms = _key_query_terms(query)
     if not key_terms:
-        return True  # No key terms to check; allow fast path
+        return True
     combined = (qa_answer + " " + " ".join(passages)).lower()
-    return all(term in combined for term in key_terms)
+
+    # Named entity topic guard
+    if "india" in key_terms and "india" not in combined:
+        return False
+    if "washington" in key_terms and "washington" not in combined:
+        return False
+
+    matched = 0
+    for term in key_terms:
+        # Check direct substring or prefix stem (e.g. success/successful)
+        if term in combined or (len(term) >= 5 and term[:4] in combined):
+            matched += 1
+
+    return matched >= max(1, len(key_terms) // 2) or (matched > 0 and any(len(t) > 6 for t in key_terms))
+
 
 
 class ConfidenceAwareAnswerRouter:

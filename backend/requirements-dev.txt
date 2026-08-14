@@ -1,0 +1,6 @@
+-r requirements.txt
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+pandas>=2.1.0
+datasets>=2.16.1
+sentence-transformers>=2.3.1

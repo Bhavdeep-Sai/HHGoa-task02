@@ -106,10 +106,21 @@ export function useStreamingVoiceRecorder({
       };
       checkVolume();
 
-      // Open WebSocket connection to streaming STT endpoint
-      const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const host = window.location.hostname || "localhost";
-      const wsUrl = `${wsProtocol}//${host}:8000/ws/voice-stream?language_code=${encodeURIComponent(selectedLanguage)}&session_id=${encodeURIComponent(newSessionId)}`;
+      // Resolve WebSocket URL dynamically (supports local dev and cloud production)
+      let wsBaseUrl = process.env.NEXT_PUBLIC_WS_URL;
+      if (!wsBaseUrl) {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        if (apiUrl) {
+          wsBaseUrl = apiUrl.replace(/^http(s)?:\/\//i, (_match, s) => (s ? "wss://" : "ws://")).replace(/\/api\/?$/i, "");
+        } else {
+          const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+          const host = window.location.hostname || "localhost";
+          wsBaseUrl = `${wsProtocol}//${host}:8000`;
+        }
+      }
+      wsBaseUrl = wsBaseUrl.replace(/\/+$/, "");
+      const wsUrl = `${wsBaseUrl}/ws/voice-stream?language_code=${encodeURIComponent(selectedLanguage)}&session_id=${encodeURIComponent(newSessionId)}`;
+
 
       vlog(`[WS] connecting to ${wsUrl}`);
       const ws = new WebSocket(wsUrl);

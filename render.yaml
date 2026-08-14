@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: indicvoicerag-backend
+    env: python
+    rootDir: backend
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: INDEX_MODE
+        value: real
+      - key: SAMPLE_MODE
+        value: "false"
+      - key: SARVAM_STT_MODEL
+        value: saaras:v4
+      - key: SARVAM_API_KEY
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        value: gpt-3.5-turbo
+      - key: CORS_ORIGINS
+        sync: false

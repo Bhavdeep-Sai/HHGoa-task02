@@ -1,7 +1,6 @@
 import hashlib
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-import torch
 import numpy as np
 from typing import List, Dict
 from backend.app.embeddings.base import BaseEmbeddingProvider
@@ -33,7 +32,11 @@ class SentenceTransformerEmbeddingProvider(BaseEmbeddingProvider):
         """Warm up embedding model in RAM with torch.inference_mode to ensure zero cold-start lag."""
         model = self._get_model()
         if model != "mock":
-            with torch.inference_mode():
+            try:
+                import torch
+                with torch.inference_mode():
+                    _ = model.encode("warmup query text", normalize_embeddings=True, show_progress_bar=False)
+            except Exception:
                 _ = model.encode("warmup query text", normalize_embeddings=True, show_progress_bar=False)
         self.embed_text("warmup query text")
 
@@ -50,7 +53,12 @@ class SentenceTransformerEmbeddingProvider(BaseEmbeddingProvider):
         if model == "mock":
             vec = self._mock_embed(text)
         else:
-            with torch.inference_mode():
+            try:
+                import torch
+                with torch.inference_mode():
+                    vec_np = model.encode(text, normalize_embeddings=True, convert_to_numpy=True, show_progress_bar=False)
+                    vec = vec_np.tolist()
+            except Exception:
                 vec_np = model.encode(text, normalize_embeddings=True, convert_to_numpy=True, show_progress_bar=False)
                 vec = vec_np.tolist()
 
@@ -66,9 +74,14 @@ class SentenceTransformerEmbeddingProvider(BaseEmbeddingProvider):
         if model == "mock":
             return [self._mock_embed(t) for t in texts]
         
-        with torch.inference_mode():
+        try:
+            import torch
+            with torch.inference_mode():
+                embeddings = model.encode(texts, batch_size=64, normalize_embeddings=True, convert_to_numpy=True, show_progress_bar=False)
+            return embeddings.tolist()
+        except Exception:
             embeddings = model.encode(texts, batch_size=64, normalize_embeddings=True, convert_to_numpy=True, show_progress_bar=False)
-        return embeddings.tolist()
+            return embeddings.tolist()
 
     def _mock_embed(self, text: str) -> List[float]:
         h = hashlib.sha256(text.encode("utf-8")).digest()
@@ -78,3 +91,4 @@ class SentenceTransformerEmbeddingProvider(BaseEmbeddingProvider):
         if norm > 0:
             vec = vec / norm
         return vec.tolist()
+

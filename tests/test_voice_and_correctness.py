@@ -6,6 +6,8 @@ from backend.app.vector_store import get_qdrant_store
 from scripts.build_indexes import build_sample_indexes
 
 
+from backend.app.config import settings
+
 @pytest.fixture(scope="module")
 def setup_orchestrator():
     embeddings = get_embedding_provider()
@@ -14,12 +16,17 @@ def setup_orchestrator():
     store = get_qdrant_store()
     store.init_collections(vector_size=embeddings.dimension)
 
-    # Rebuild sample index to ensure deterministic test state regardless of execution order.
-    # This prevents stale passages from prior test modules (e.g. test_rrf.py) from leaking
-    # into the in-memory Qdrant store and causing false grounding on India/Washington queries.
-    build_sample_indexes()
+    if settings.INDEX_MODE == "sample" or settings.SAMPLE_MODE:
+        build_sample_indexes()
+    else:
+        store.load_from_disk()
+        from backend.app.retrieval.bm25 import get_bm25_retriever
+        bm25 = get_bm25_retriever()
+        bm25.load_from_disk(settings.BM25_STORAGE_PATH)
 
     return RAGOrchestrator()
+
+
 
 
 @pytest.mark.asyncio
