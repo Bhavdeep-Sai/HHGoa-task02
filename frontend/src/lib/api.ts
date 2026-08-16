@@ -45,7 +45,10 @@ export interface RAGPipelineResponse {
   metrics: Record<string, any>;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const API_BASE = RAW_API_URL.endsWith("/api")
+  ? RAW_API_URL
+  : `${RAW_API_URL.replace(/\/+$/, "")}/api`;
 
 export async function sendTextQuery(query: string): Promise<RAGPipelineResponse> {
   const res = await fetch(`${API_BASE}/query`, {

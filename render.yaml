@@ -10,6 +10,10 @@ services:
     envVars:
       - key: PYTHONUNBUFFERED
         value: "1"
+      - key: PYTHONPATH
+        value: "."
+      - key: RETRIEVAL_MODE
+        value: sqlite
       - key: INDEX_MODE
         value: real
       - key: SAMPLE_MODE

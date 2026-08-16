@@ -5,13 +5,14 @@ import re
 from typing import Dict, Any, Optional, List
 from pydantic import BaseModel
 from backend.app.stt import get_stt_provider
-from backend.app.retrieval import LanguageDetector, HybridRetriever, BM25Retriever
+from backend.app.retrieval import LanguageDetector, SQLiteRetriever, get_sqlite_retriever, HybridRetriever, BM25Retriever
 from backend.app.retrieval.intent import QueryIntentClassifier, QueryIntent
 from backend.app.retrieval.relevance import RelevanceGate
 from backend.app.guardrails import GuardrailEngine
 from backend.app.generation import ConfidenceAwareAnswerRouter, StructuredAnswerResponse
 from backend.app.utils.metrics import MetricsCollector
 from backend.app.utils.logger import logger
+from backend.app.config import settings
 
 
 class PipelineStageMetrics(BaseModel):
@@ -60,11 +61,19 @@ class RAGOrchestrator:
     """
     def __init__(self, bm25_retriever: BM25Retriever = None):
         self.stt_provider = get_stt_provider()
-        self.hybrid_retriever = HybridRetriever(bm25_retriever=bm25_retriever)
+        self.sqlite_retriever = get_sqlite_retriever()
+        self._hybrid_retriever = None
+        self._bm25_retriever = bm25_retriever
         self.relevance_gate = RelevanceGate(threshold=0.25)
         self.guardrail_engine = GuardrailEngine()
         self.answer_router = ConfidenceAwareAnswerRouter()
         self.metrics_collector = MetricsCollector()
+
+    @property
+    def hybrid_retriever(self):
+        if self._hybrid_retriever is None:
+            self._hybrid_retriever = HybridRetriever(bm25_retriever=self._bm25_retriever)
+        return self._hybrid_retriever
 
     async def execute_voice_query(
         self,
@@ -215,17 +224,31 @@ class RAGOrchestrator:
                 stage_latencies=stage_metrics
             )
 
-        # Stage 2: Parallel Retrieval (Dense + BM25 + QA Index)
-        contexts, reranker_used, _, ret_ms, ret_breakdown = self.hybrid_retriever.search_sync(
-            query=norm_query,
-            language=lang_code,
-            top_k=5
-        )
+        # Stage 2: Retrieval (SQLite FTS5 in production, Hybrid in local/research mode)
+        if getattr(settings, "RETRIEVAL_MODE", "sqlite") == "sqlite":
+            t_ret_start = time.perf_counter()
+            contexts = self.sqlite_retriever.search(
+                query=norm_query,
+                language=lang_code,
+                top_k=5
+            )
+            ret_ms = round((time.perf_counter() - t_ret_start) * 1000.0, 2)
+            reranker_used = False
+            ret_breakdown = {
+                "sqlite_ms": ret_ms,
+                "total_retrieval_ms": ret_ms
+            }
+        else:
+            contexts, reranker_used, _, ret_ms, ret_breakdown = self.hybrid_retriever.search_sync(
+                query=norm_query,
+                language=lang_code,
+                top_k=5
+            )
         stage_metrics.retrieval_latency_ms = ret_ms
         stage_metrics.embedding_ms = ret_breakdown.get("embedding_ms", 0.0)
         stage_metrics.qdrant_connect_ms = ret_breakdown.get("qdrant_connect_ms", 0.0)
         stage_metrics.dense_search_ms = ret_breakdown.get("dense_search_ms", 0.0)
-        stage_metrics.bm25_ms = ret_breakdown.get("bm25_ms", 0.0)
+        stage_metrics.bm25_ms = ret_breakdown.get("bm25_ms", ret_ms)
         stage_metrics.rrf_ms = ret_breakdown.get("rrf_ms", 0.0)
         stage_metrics.reranker_ms = ret_breakdown.get("reranker_ms", 0.0)
 

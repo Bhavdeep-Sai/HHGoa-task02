@@ -26,13 +26,28 @@ class TextQueryRequest(BaseModel):
 
 @router.get("/health")
 async def health_check():
+    retrieval_mode = getattr(settings, "RETRIEVAL_MODE", "sqlite")
+    if retrieval_mode == "sqlite":
+        from backend.app.retrieval.sqlite_retriever import get_sqlite_retriever
+        diag = get_sqlite_retriever().get_diagnostics()
+        return {
+            "status": "ok",
+            "service": settings.PROJECT_NAME,
+            "version": settings.VERSION,
+            "retrieval_mode": "sqlite",
+            "retrieval_ready": diag.get("retrieval_ready", True),
+            "document_count": diag.get("document_count", 0),
+            "database_size_mb": diag.get("database_size_mb", 0.0)
+        }
     return {
-        "status": "healthy",
+        "status": "ok",
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION,
-        "mode": "demo" if settings.DEMO_MODE else "production",
+        "retrieval_mode": "hybrid",
+        "retrieval_ready": True,
         "sample_mode": settings.SAMPLE_MODE
     }
+
 
 
 @router.get("/config")
@@ -166,15 +181,24 @@ async def get_dataset_debug_status():
 
 @router.get("/debug/trace-query")
 async def debug_trace_query(query: str = "What was the immediate impact of the Manhattan Project's success?"):
+    import time
     orch = get_orchestrator()
     norm_query = query.strip()
     
-    # 1. Search hybrid retriever
-    candidates, reranker_used, top_conf, ret_ms, breakdown = orch.hybrid_retriever.search_sync(
-        query=norm_query,
-        language="en",
-        top_k=10
-    )
+    # 1. Search retriever based on RETRIEVAL_MODE
+    retrieval_mode = getattr(settings, "RETRIEVAL_MODE", "sqlite")
+    if retrieval_mode == "sqlite":
+        t0 = time.perf_counter()
+        candidates = orch.sqlite_retriever.search(query=norm_query, language="en", top_k=10)
+        ret_ms = round((time.perf_counter() - t0) * 1000.0, 2)
+        reranker_used = False
+        breakdown = {"sqlite_ms": ret_ms, "total_retrieval_ms": ret_ms}
+    else:
+        candidates, reranker_used, top_conf, ret_ms, breakdown = orch.hybrid_retriever.search_sync(
+            query=norm_query,
+            language="en",
+            top_k=10
+        )
     
     # 2. Evaluate relevance gate
     gate_passed, rel_score, heuristic_conf, margin, agreement, gate_refusal = orch.relevance_gate.evaluate(

@@ -18,6 +18,7 @@ data/qdrant_db/
 backend/data/qdrant_db/
 *.db
 *.sqlite
+!**/msmarco_xi.sqlite
 *.pkl
 !**/bm25_index.pkl
 !**/vector_metadata.pkl

@@ -25,11 +25,20 @@ class RelevanceGate:
     """
     def __init__(self, threshold: Optional[float] = None):
         self.threshold = threshold if threshold is not None else settings.RELEVANCE_THRESHOLD
-        self.embeddings = get_embedding_provider()
+        self._embeddings = None
+
+    @property
+    def embeddings(self):
+        if self._embeddings is None and getattr(settings, "RETRIEVAL_MODE", "sqlite") == "hybrid":
+            try:
+                self._embeddings = get_embedding_provider()
+            except Exception:
+                self._embeddings = None
+        return self._embeddings
 
     @staticmethod
     def _tokenize(text: str) -> set:
-        return set(re.findall(r'\w+', text.lower()))
+        return set(re.findall(r'[\w]+', text.lower()))
 
     # Comprehensive stop words across English, Hindi, and Indic fillers
     STOP_WORDS = {
@@ -63,26 +72,32 @@ class RelevanceGate:
         q_tokens = {t for t in raw_q_tokens if t not in self.STOP_WORDS and len(t) > 1}
         d_tokens = self._tokenize(text)
 
-        if not q_tokens or not d_tokens:
+        # Also search in query/answer payload fields if available
+        q_en_text = payload.get("query_en") or payload.get("query") or ""
+        a_en_text = payload.get("answer") or payload.get("answer_hi") or ""
+        d_tokens_all = d_tokens.union(self._tokenize(q_en_text)).union(self._tokenize(a_en_text))
+
+        if not q_tokens or not d_tokens_all:
             overlap_score = 0.0
         else:
             matched_count = 0
             for qt in q_tokens:
-                if qt in d_tokens:
+                if qt in d_tokens_all:
                     matched_count += 1
                 else:
                     # Check synonym expansion
                     syns = self.SYNONYM_MAP.get(qt, set())
-                    if any(syn in d_tokens for syn in syns):
+                    if any(syn in d_tokens_all for syn in syns):
                         matched_count += 0.85  # 85% credit for semantic synonym match
 
             overlap_score = min(1.0, matched_count / len(q_tokens))
 
-        # 2. Query-Evidence Semantic Embedding Similarity
-        dense_sc = candidate.get("dense_score") or (candidate.get("score") if candidate.get("document_type") != "bm25" else None)
+        # 2. Query-Evidence Semantic Embedding Similarity (only in hybrid mode)
+        cosine_sim = 0.0
+        dense_sc = candidate.get("dense_score")
         if dense_sc is not None and float(dense_sc) > 0.0:
             cosine_sim = float(dense_sc)
-        else:
+        elif getattr(settings, "RETRIEVAL_MODE", "sqlite") == "hybrid" and self.embeddings is not None:
             try:
                 cid = candidate.get("payload", {}).get("chunk_id") or candidate.get("id")
                 store = get_qdrant_store()
@@ -93,44 +108,52 @@ class RelevanceGate:
                     norm_q = np.linalg.norm(q_vec)
                     norm_d = np.linalg.norm(d_vec)
                     cosine_sim = float(dot / (norm_q * norm_d + 1e-9)) if norm_q > 0 and norm_d > 0 else 0.0
-                else:
-                    cosine_sim = 0.0
             except Exception:
                 cosine_sim = 0.0
 
-        # Normalize raw RRF score to 0..1 scale (max raw RRF ~ 0.01639 * 2 = 0.0328)
+        # Normalize raw RRF score or FTS score
         raw_rrf = float(candidate.get("rrf_score", 0.0))
         norm_rrf = min(1.0, raw_rrf * 61.0)
-        method_agreement = raw_rrf >= 0.010
+        method_agreement = raw_rrf >= 0.010 or overlap_score >= 0.80
 
-        raw_bm25 = float(candidate.get("score", 0.0)) if candidate.get("document_type") == "passage" else 0.0
+        raw_bm25 = float(candidate.get("bm25_score") or candidate.get("score") or 0.0)
         norm_bm25 = min(1.0, raw_bm25 / 15.0)
 
         reranker_score = float(candidate.get("rerank_score", 0.0))
 
-        # Check key named entities coverage (e.g. "india", "manhattan", "constitution")
-        key_entities = {t for t in q_tokens if t in {"india", "manhattan", "constitution", "japan", "columbia"} or t.istitle()}
+        # Check key named entities coverage (e.g. "india", "capital", "manhattan", "madhavan", "constitution")
+        key_entities = {
+            t for t in q_tokens
+            if t in {"india", "capital", "manhattan", "constitution", "japan", "columbia", "madhavan", "apollo", "washington"} or t.istitle()
+        }
         if key_entities:
             entity_matches = 0
             for ke in key_entities:
                 syns = self.SYNONYM_MAP.get(ke, set())
-                if ke in d_tokens or any(syn in d_tokens for syn in syns):
+                if ke in d_tokens_all or any(syn in d_tokens_all for syn in syns):
                     entity_matches += 1
             entity_coverage = entity_matches / len(key_entities)
         else:
             entity_coverage = 1.0
 
         # 3. Composite Query-Evidence Relevance Score
-        # Embedding similarity provides primary semantic signal (65%), content term overlap provides lexical signal (35%)
-        final_rel = (cosine_sim * 0.65) + (overlap_score * 0.35)
-        if method_agreement:
+        if cosine_sim > 0.0:
+            final_rel = (cosine_sim * 0.65) + (overlap_score * 0.35)
+        else:
+            # In SQLite FTS mode: overlap score (65%) + normalized lexical score (35%)
+            final_rel = (overlap_score * 0.65) + (norm_bm25 * 0.35)
+
+        if method_agreement or overlap_score >= 0.80:
             final_rel = min(1.0, final_rel + 0.10)
 
-        # Enforce penalty only if key named entities are missing AND semantic similarity is low
-        if entity_coverage < 0.50 and cosine_sim < 0.65:
-            final_rel = final_rel * 0.35
-        elif overlap_score == 0.0 and len(q_tokens) >= 2 and cosine_sim < 0.60:
-            final_rel = final_rel * 0.40
+        # Strict Named Entity & Concept Guardrail:
+        # Enforce heavy penalty if key named entities are missing or overlap is insufficient for short queries
+        if entity_coverage < 0.60:
+            final_rel = final_rel * 0.25
+        elif overlap_score < 0.60 and len(q_tokens) <= 3:
+            final_rel = final_rel * 0.30
+        elif overlap_score == 0.0 and len(q_tokens) >= 2:
+            final_rel = final_rel * 0.25
 
         signals = NormalizedRelevanceSignals(
             dense_similarity=round(cosine_sim, 4),

@@ -10,8 +10,8 @@ def test_health_endpoint():
     res = client.get("/api/health")
     assert res.status_code == 200
     data = res.json()
-    assert data["status"] == "healthy"
-    assert "IndicVoiceRAG" in data["service"]
+    assert data["status"] in ["ok", "healthy"]
+    assert "IndicVoiceRAG" in data.get("service", "")
 
 
 def test_config_endpoint():

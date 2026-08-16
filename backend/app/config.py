@@ -13,18 +13,22 @@ _PROJECT_ROOT = _BACKEND_DIR.parent                 # repo root
 def _resolve_data_dir() -> Path:
     candidates = [
         Path(os.environ.get("DATA_DIR", "")),
-        _PROJECT_ROOT / "data",
         _BACKEND_DIR / "data",
+        _PROJECT_ROOT / "data",
         Path.cwd() / "data",
         Path.cwd().parent / "data"
     ]
     for c in candidates:
-        if c and c.exists() and (c / "vector_matrices.npz").exists():
+        if c and c.exists() and ((c / "msmarco_xi.sqlite").exists() or (c / "vector_matrices.npz").exists() or (c / "bm25_index.pkl").exists()):
             return c.resolve()
+    # Fallback to backend/data if it exists, else project_root/data
+    if (_BACKEND_DIR / "data").exists():
+        return (_BACKEND_DIR / "data").resolve()
     return (_PROJECT_ROOT / "data").resolve()
 
 
 RESOLVED_DATA_DIR = _resolve_data_dir()
+
 
 
 class Settings(BaseSettings):
@@ -70,8 +74,12 @@ class Settings(BaseSettings):
     MSMARCO_BATCH_SIZE: int = 64
     MSMARCO_STREAMING: bool = True
 
+    # Retrieval Mode: "sqlite" (default production mode) or "hybrid"
+    RETRIEVAL_MODE: str = "sqlite"
+
     # Persistent Storage Paths (resolved dynamically from project root or backend dir)
     DATA_DIRECTORY: str = str(RESOLVED_DATA_DIR)
+    SQLITE_STORAGE_PATH: str = str(RESOLVED_DATA_DIR / "msmarco_xi.sqlite")
     QDRANT_STORAGE_PATH: str = str(RESOLVED_DATA_DIR / "qdrant_db")
     BM25_STORAGE_PATH: str = str(RESOLVED_DATA_DIR / "bm25_index.pkl")
     NPZ_STORAGE_PATH: str = str(RESOLVED_DATA_DIR / "vector_matrices.npz")

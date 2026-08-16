@@ -85,8 +85,8 @@ class GroundingValidator:
             q_matched = sum(1 for w in query_words if cls._stem_match(w, combined_context))
             evidence_relevance = q_matched / len(query_words)
 
-        # 3. Multilingual Semantic Embedding Similarity (only if lexical claim support needs semantic boost)
-        if lexical_claim_support < 0.60:
+        # 3. Multilingual Semantic Embedding Similarity (only if lexical claim support needs semantic boost and in hybrid mode)
+        if lexical_claim_support < 0.60 and getattr(settings, "RETRIEVAL_MODE", "sqlite") == "hybrid":
             try:
                 embeddings = get_embedding_provider()
                 ans_vec = embeddings.embed_text(answer)
