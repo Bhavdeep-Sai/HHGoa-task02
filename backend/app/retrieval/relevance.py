@@ -121,11 +121,16 @@ class RelevanceGate:
 
         reranker_score = float(candidate.get("rerank_score", 0.0))
 
-        # Check key named entities coverage (e.g. "india", "capital", "manhattan", "madhavan", "constitution")
-        key_entities = {
-            t for t in q_tokens
-            if t in {"india", "capital", "manhattan", "constitution", "japan", "columbia", "madhavan", "apollo", "washington"} or t.istitle()
-        }
+        # Dynamic Named Entity / Proper Noun Extraction:
+        # Extract title-cased words (excluding sentence starters/question words) and explicit entities
+        QUESTION_WORDS = {"what", "which", "when", "where", "who", "whom", "whose", "why", "how", "the", "this", "that", "is", "are", "was", "were", "can", "could", "would", "should"}
+        raw_title_tokens = set(re.findall(r'\b[A-Z][a-zA-Z0-9_\-]+\b', query))
+        proper_nouns = {t.lower() for t in raw_title_tokens if t.lower() not in QUESTION_WORDS and len(t) > 1}
+        
+        # Include any domain-specific entities if present in query
+        domain_entities = {"india", "capital", "manhattan", "constitution", "japan", "columbia", "madhavan", "apollo", "washington", "nations", "united"}
+        key_entities = proper_nouns.union({t for t in q_tokens if t in domain_entities})
+
         if key_entities:
             entity_matches = 0
             for ke in key_entities:
@@ -140,20 +145,26 @@ class RelevanceGate:
         if cosine_sim > 0.0:
             final_rel = (cosine_sim * 0.65) + (overlap_score * 0.35)
         else:
-            # In SQLite FTS mode: overlap score (65%) + normalized lexical score (35%)
-            final_rel = (overlap_score * 0.65) + (norm_bm25 * 0.35)
+            # In SQLite FTS mode: relevance is strictly bounded by content term overlap
+            # A passage must actually contain the query terms to be considered relevant evidence
+            if overlap_score >= 0.50:
+                final_rel = (overlap_score * 0.65) + (norm_bm25 * 0.35)
+            else:
+                # Sub-50% term overlap indicates incidental word match (e.g. matching only 'primary' in a UN query)
+                final_rel = overlap_score * 0.30
 
-        if method_agreement or overlap_score >= 0.80:
+        if (overlap_score >= 0.80 or raw_rrf >= 0.010) and entity_coverage >= 0.80:
             final_rel = min(1.0, final_rel + 0.10)
 
-        # Strict Named Entity & Concept Guardrail:
-        # Enforce heavy penalty if key named entities are missing or overlap is insufficient for short queries
-        if entity_coverage < 0.60:
-            final_rel = final_rel * 0.25
-        elif overlap_score < 0.60 and len(q_tokens) <= 3:
-            final_rel = final_rel * 0.30
-        elif overlap_score == 0.0 and len(q_tokens) >= 2:
-            final_rel = final_rel * 0.25
+        # Strict Named Entity & Evidence Guardrail:
+        # If query contains key entities (e.g. "United Nations", "Madhavan") and they are missing from text,
+        # severely penalize to ensure the evidence gate immediately fails.
+        if entity_coverage < 0.70:
+            final_rel = final_rel * 0.15
+        elif overlap_score < 0.50 and len(q_tokens) >= 2:
+            final_rel = final_rel * 0.20
+
+        method_agreement = (final_rel >= 0.70 and overlap_score >= 0.75)
 
         signals = NormalizedRelevanceSignals(
             dense_similarity=round(cosine_sim, 4),

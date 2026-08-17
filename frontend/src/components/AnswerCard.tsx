@@ -9,11 +9,12 @@ interface AnswerCardProps {
 }
 
 export function AnswerCard({ response }: AnswerCardProps) {
-  const isGrounded = response.grounded && response.confidence > 0;
+  const isGrounded = Boolean(response.grounded && response.confidence > 0);
   const isCasual = response.intent === "casual" || response.intent === "off_topic";
   const isSecurity = response.intent === "prompt_injection" || response.intent === "unsafe";
 
-  const confidencePct = isGrounded ? Math.round(response.confidence * 100) : 0;
+  // Confidence directly mapped from backend response (0..1 -> 0%..100%)
+  const confidencePct = Math.round((response.confidence ?? 0) * 100);
 
   // Header Title & Icon logic
   let headerTitle = "Grounded Answer";

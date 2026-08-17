@@ -82,12 +82,14 @@ class LLMGenerator:
                 answer_text = res_data["choices"][0]["message"]["content"].strip()
 
             gen_latency_ms = (time.perf_counter() - start_time) * 1000.0
-            citations = [{"chunk_id": str(c.get("payload", {}).get("chunk_id", c.get("id"))), "reason": "Supports claim"} for c in contexts[:2]]
+            REFUSAL_TRIGGERS = ["insufficient context", "insufficient evidence", "couldn't find", "could not find", "do not have enough", "cannot answer", "not mentioned in", "does not contain", "no information"]
+            is_refusal = any(t in answer_text.lower() for t in REFUSAL_TRIGGERS)
+            citations = [{"chunk_id": str(c.get("payload", {}).get("chunk_id", c.get("id"))), "reason": "Supports claim"} for c in contexts[:2]] if not is_refusal else []
 
             return StructuredAnswerResponse(
                 answer=answer_text,
-                grounded=True,
-                confidence=confidence,
+                grounded=not is_refusal,
+                confidence=confidence if not is_refusal else 0.0,
                 citations=citations
             ), round(gen_latency_ms, 2)
 

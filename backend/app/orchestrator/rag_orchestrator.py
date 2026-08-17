@@ -64,7 +64,7 @@ class RAGOrchestrator:
         self.sqlite_retriever = get_sqlite_retriever()
         self._hybrid_retriever = None
         self._bm25_retriever = bm25_retriever
-        self.relevance_gate = RelevanceGate(threshold=0.25)
+        self.relevance_gate = RelevanceGate(threshold=getattr(settings, "RELEVANCE_THRESHOLD", 0.35))
         self.guardrail_engine = GuardrailEngine()
         self.answer_router = ConfidenceAwareAnswerRouter()
         self.metrics_collector = MetricsCollector()
@@ -261,6 +261,8 @@ class RAGOrchestrator:
         if not gate_passed:
             rag_ms = round((time.perf_counter() - start_total) * 1000.0, 2)
             voice_ms = round(force_stt_ms + rag_ms, 2)
+            stage_metrics.generation_latency_ms = 0.0
+            stage_metrics.grounding_ms = 0.0
             stage_metrics.rag_latency_ms = rag_ms
             stage_metrics.voice_to_answer_latency_ms = voice_ms
             stage_metrics.total_latency_ms = voice_ms if source == "voice" else rag_ms
@@ -275,7 +277,7 @@ class RAGOrchestrator:
                 answer=refusal_ans,
                 confidence=0.0,
                 grounded=False,
-                intent="unsupported_query",
+                intent="insufficient_evidence",
                 refusal_reason=gate_refusal or refusal_ans,
                 stage_latencies=stage_metrics
             )

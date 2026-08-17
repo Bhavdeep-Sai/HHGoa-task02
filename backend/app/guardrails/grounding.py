@@ -1,6 +1,7 @@
 import re
 import numpy as np
 from typing import List, Dict, Any, Tuple
+from backend.app.config import settings
 from backend.app.embeddings import get_embedding_provider
 
 
@@ -59,6 +60,22 @@ class GroundingValidator:
         Returns: (is_grounded, grounding_score, matched_citations)
         """
         if not answer or not contexts:
+            return False, 0.0, []
+
+        # Explicit check: If the answer indicates insufficient evidence or refusal, it is NEVER grounded
+        REFUSAL_PATTERNS = [
+            r"insufficient context",
+            r"insufficient evidence",
+            r"couldn't find reliable information",
+            r"could not find reliable information",
+            r"do not have (enough|sufficient) information",
+            r"cannot answer based on the provided",
+            r"not mentioned in the (provided|given) context",
+            r"provided (context|text) does not contain",
+            r"no information provided"
+        ]
+        ans_lower = answer.lower()
+        if any(re.search(pat, ans_lower) for pat in REFUSAL_PATTERNS):
             return False, 0.0, []
 
         combined_context = " ".join([
