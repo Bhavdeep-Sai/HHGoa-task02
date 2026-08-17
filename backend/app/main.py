@@ -66,6 +66,7 @@ async def lifespan(app: FastAPI):
         print("==================================================")
     except Exception as e:
         print(f"Warning during startup initialization: {e}")
+    yield
     # Clean shutdown: close Qdrant client and LLM HTTP client
     try:
         from backend.app.generation.llm import close_llm_http_client
