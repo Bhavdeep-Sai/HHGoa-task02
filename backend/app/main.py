@@ -66,8 +66,12 @@ async def lifespan(app: FastAPI):
         print("==================================================")
     except Exception as e:
         print(f"Warning during startup initialization: {e}")
-    yield
-    # Clean shutdown: close Qdrant client if open
+    # Clean shutdown: close Qdrant client and LLM HTTP client
+    try:
+        from backend.app.generation.llm import close_llm_http_client
+        await close_llm_http_client()
+    except Exception:
+        pass
     try:
         if getattr(settings, "RETRIEVAL_MODE", "sqlite") == "hybrid":
             qdrant = get_qdrant_store()
