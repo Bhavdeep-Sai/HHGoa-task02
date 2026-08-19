@@ -102,3 +102,56 @@ export async function getSystemMetrics(): Promise<any> {
   return res.json();
 }
 
+export interface BackendHealthResponse {
+  ok: boolean;
+  status?: string;
+  service?: string;
+  version?: string;
+  retrieval_mode?: string;
+  retrieval_ready?: boolean;
+  latencyMs?: number;
+  error?: string;
+}
+
+export async function checkBackendHealth(timeoutMs = 8000): Promise<BackendHealthResponse> {
+  const startTime = Date.now();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  // Derive root URL (without trailing /api)
+  const rootUrl = API_BASE.replace(/\/api\/?$/, "");
+  const healthEndpoints = [`${rootUrl}/health`, `${API_BASE}/health`];
+
+  for (const url of healthEndpoints) {
+    try {
+      const res = await fetch(url, {
+        method: "GET",
+        signal: controller.signal,
+        cache: "no-store"
+      });
+      clearTimeout(timeoutId);
+      const latencyMs = Date.now() - startTime;
+      if (res.ok) {
+        const data = await res.json();
+        return {
+          ok: true,
+          status: data.status || "ok",
+          service: data.service,
+          version: data.version,
+          retrieval_mode: data.retrieval_mode,
+          retrieval_ready: data.retrieval_ready ?? true,
+          latencyMs
+        };
+      }
+    } catch (e: any) {
+      // Continue to next endpoint attempt or abort
+      if (e.name === "AbortError") {
+        return { ok: false, error: "Health check timed out (backend sleeping)" };
+      }
+    }
+  }
+
+  clearTimeout(timeoutId);
+  return { ok: false, error: "Backend server is not reachable yet" };
+}
+

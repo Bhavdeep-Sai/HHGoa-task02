@@ -8,11 +8,21 @@ import { EvidenceAccordion } from "../components/EvidenceAccordion";
 import { LatencyMetrics } from "../components/LatencyMetrics";
 import { DebugPanel } from "../components/DebugPanel";
 import { useStreamingVoiceRecorder } from "../hooks/useStreamingVoiceRecorder";
+import { useBackendStatus } from "../hooks/useBackendStatus";
 import { sendTextQuery, RAGPipelineResponse } from "../lib/api";
 
 export default function Home() {
   const [debugMode, setDebugMode] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  // Backend connection status & cold-start wake-up monitor
+  const {
+    status: backendStatus,
+    elapsedSeconds,
+    latencyMs,
+    isConnected,
+    retryConnection
+  } = useBackendStatus();
 
   // Load and apply theme
   useEffect(() => {
@@ -67,6 +77,10 @@ export default function Home() {
   });
 
   const handleStartVoiceRecording = async () => {
+    if (!isConnected) {
+      setErrorMsg("Please wait for the backend server to finish waking up.");
+      return;
+    }
     setVoiceTranscript("");
     setResponse(null);
     setErrorMsg(null);
@@ -80,6 +94,10 @@ export default function Home() {
   };
 
   const handleTextQuerySubmit = async (queryText: string) => {
+    if (!isConnected) {
+      setErrorMsg("Backend server is not connected yet. Please wait a moment.");
+      return;
+    }
     try {
       setInputMode("text");
       setTextQuery(queryText);
@@ -92,6 +110,10 @@ export default function Home() {
       setResponse(result);
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to process query");
+      // If network failed, trigger backend status check
+      if (err.message && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
+        retryConnection();
+      }
     } finally {
       setIsLoading(false);
     }
@@ -123,6 +145,10 @@ export default function Home() {
         setSelectedLanguage={setSelectedLanguage}
         theme={theme}
         toggleTheme={toggleTheme}
+        backendStatus={backendStatus}
+        elapsedSeconds={elapsedSeconds}
+        latencyMs={latencyMs}
+        onRetryBackend={retryConnection}
       />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-8 space-y-6">
@@ -138,6 +164,9 @@ export default function Home() {
           textQuery={textQuery}
           setTextQuery={setTextQuery}
           inputMode={inputMode}
+          backendStatus={backendStatus}
+          elapsedSeconds={elapsedSeconds}
+          onRetryBackend={retryConnection}
         />
 
         {/* Error Banner */}

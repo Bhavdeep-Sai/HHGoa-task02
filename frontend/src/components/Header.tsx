@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Mic, Terminal, ShieldCheck, Zap, Sun, Moon } from "lucide-react";
+import { Mic, Terminal, ShieldCheck, Zap, Sun, Moon, Server, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { BackendConnectionStatus } from "../hooks/useBackendStatus";
 
 interface HeaderProps {
   debugMode: boolean;
@@ -10,6 +11,10 @@ interface HeaderProps {
   setSelectedLanguage: (lang: string) => void;
   theme: "light" | "dark";
   toggleTheme: () => void;
+  backendStatus?: BackendConnectionStatus;
+  elapsedSeconds?: number;
+  latencyMs?: number | null;
+  onRetryBackend?: () => void;
 }
 
 export const SUPPORTED_LANGUAGES = [
@@ -33,7 +38,11 @@ export function Header({
   selectedLanguage,
   setSelectedLanguage,
   theme,
-  toggleTheme
+  toggleTheme,
+  backendStatus = "checking",
+  elapsedSeconds = 0,
+  latencyMs = null,
+  onRetryBackend
 }: HeaderProps) {
   return (
     <header className="border-b border-border/40 bg-surface/75 backdrop-blur-md sticky top-0 z-50 px-8 py-4 flex items-center justify-between flex-wrap gap-4 shadow-sm shadow-slate-100/10 dark:shadow-black/5 transition-all duration-300">
@@ -55,6 +64,34 @@ export function Header({
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
+        {/* Backend Connection Status Badge */}
+        {backendStatus === "connected" ? (
+          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-950/40 px-3.5 py-1.5 rounded-full border border-emerald-500/20 dark:border-emerald-800/30 shadow-sm transition-all duration-200" title={`Connected${latencyMs ? ` (${latencyMs}ms)` : ""}`}>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="flex items-center gap-1">
+              Backend Live
+              {latencyMs !== null && (
+                <span className="text-[10px] opacity-75 font-mono">({latencyMs}ms)</span>
+              )}
+            </span>
+          </div>
+        ) : backendStatus === "checking" ? (
+          <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-950/40 px-3.5 py-1.5 rounded-full border border-amber-500/25 dark:border-amber-800/30 shadow-sm transition-all duration-200" title="Waking up server...">
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-500" />
+            <span>Waking Up Backend {elapsedSeconds > 0 ? `(${elapsedSeconds}s)` : ""}</span>
+          </div>
+        ) : (
+          <button
+            onClick={onRetryBackend}
+            className="flex items-center gap-2 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-500/10 dark:bg-red-950/40 hover:bg-red-500/20 px-3.5 py-1.5 rounded-full border border-red-500/25 dark:border-red-800/30 shadow-sm transition-all duration-200 cursor-pointer"
+            title="Click to reconnect"
+          >
+            <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+            <span>Backend Offline</span>
+            <RefreshCw className="w-3 h-3 ml-0.5 opacity-80" />
+          </button>
+        )}
+
         {/* Language Selector Dropdown */}
         <select
           value={selectedLanguage}
